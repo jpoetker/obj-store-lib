@@ -316,7 +316,7 @@ class AtmosRequest {
 			buff.append(key).append(':').append(normalizeSpace(xEmcHeaders.get(key)));
 		}
 		
-		String hash = sign(buff.toString());
+		String hash = signHash(buff.toString());
 		
 		headers.put(X_EMC_SIGNATURE_HEADER, hash);
 	}
@@ -352,12 +352,12 @@ class AtmosRequest {
      * @throws IllegalStateException
      * @throws UnsupportedEncodingException
      */
-	protected String sign(String value) throws NoSuchAlgorithmException, InvalidKeyException, IllegalStateException, UnsupportedEncodingException {
+	protected String signHash(String hash) throws NoSuchAlgorithmException, InvalidKeyException, IllegalStateException, UnsupportedEncodingException {
 		Mac mac = Mac.getInstance("HmacSHA1");
 		SecretKeySpec key = new SecretKeySpec(secret, "HmacSHA1");
 		mac.init(key);
 		
-		byte[] hashedBytes = mac.doFinal(value.getBytes(UTF_8));
+		byte[] hashedBytes = mac.doFinal(hash.getBytes(UTF_8));
 		
 		return new String(Base64.encodeBase64(hashedBytes), UTF_8);
 	}
