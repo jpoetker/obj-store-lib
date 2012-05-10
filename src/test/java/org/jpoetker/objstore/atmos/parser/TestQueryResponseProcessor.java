@@ -191,7 +191,7 @@ public class TestQueryResponseProcessor {
 	@Test
 	public void testParseObjectIdentifiers() throws Exception {
 		HttpEntity mockEntity = mock(HttpEntity.class);
-		when(mockEntity.getContent()).thenReturn(new ByteArrayInputStream(objectResponseXML.getBytes()));
+		when(mockEntity.getContent()).thenReturn(new ByteArrayInputStream(objectResponseXML.getBytes("UTF-8")));
 		
 		when(mockHttpResponse.getEntity()).thenReturn(mockEntity);
 		when(mockHttpResponse.getFirstHeader("x-emc-token")).thenReturn(new BasicHeader("x-emc-token", "tokenvalue"));
@@ -209,7 +209,7 @@ public class TestQueryResponseProcessor {
 	@Test
 	public void testParseObjectInfo() throws Exception {
 		HttpEntity mockEntity = mock(HttpEntity.class);
-		when(mockEntity.getContent()).thenReturn(new ByteArrayInputStream(objectResonpseWithMetadataXML.getBytes()));
+		when(mockEntity.getContent()).thenReturn(new ByteArrayInputStream(objectResonpseWithMetadataXML.getBytes("UTF-8")));
 		
 		when(mockHttpResponse.getEntity()).thenReturn(mockEntity);
 		when(mockHttpResponse.getFirstHeader("x-emc-token")).thenReturn(new BasicHeader("x-emc-token", "tokenvalue"));
