@@ -40,7 +40,8 @@ public class TestQueryResponseProcessorStreamImpl {
 	"		<ObjectID>4ee696e4a41f549804f0b909b6d8e304fa97db17e4d9</ObjectID>\n" + 
 	"	</Object>\n" + 
 	"</ListObjectsResponse>";
-private static final String objectResonpseWithMetadataXML = "<?xml version='1.0' encoding='UTF-8'?>\n" + 
+	
+	private static final String objectResonpseWithMetadataXML = "<?xml version='1.0' encoding='UTF-8'?>\n" + 
 	"<ListObjectsResponse xmlns='http://www.emc.com/cos/'>\n" + 
 	"	<Object>\n" + 
 	"		<ObjectID>4ee696e4a11f549804f0b909b09e0d04fa41c52938b1</ObjectID>\n" + 
