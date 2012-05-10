@@ -32,8 +32,8 @@ import org.jpoetker.objstore.ObjectStorageException;
 import org.jpoetker.objstore.ObjectStore;
 import org.jpoetker.objstore.QueryResults;
 import org.jpoetker.objstore.UserContext;
-import org.jpoetker.objstore.atmos.parser.QueryResponseProcessor;
-import org.jpoetker.objstore.atmos.parser.QueryResponseProcessorStreamImpl;
+import org.jpoetker.objstore.atmos.parser.QueryResponseParser;
+import org.jpoetker.objstore.atmos.parser.QueryResponseParserStreamImpl;
 
 public class AtmosObjectStore implements ObjectStore {
 	
@@ -42,7 +42,7 @@ public class AtmosObjectStore implements ObjectStore {
 	private String scheme;
 	private String contextRoot = "/rest";
 	private HttpClient httpClient;
-	private QueryResponseProcessor queryResponseProcessor;
+	private QueryResponseParser queryResponseProcessor;
 	
 	public AtmosObjectStore() {
 		this(null);
@@ -86,7 +86,7 @@ public class AtmosObjectStore implements ObjectStore {
 		this.port = port;
 		this.scheme = (scheme != null) ? scheme.toLowerCase() : ((port == 443) ? "https" : "http");
 		this.httpClient = httpClient;
-		this.queryResponseProcessor = new QueryResponseProcessorStreamImpl();
+		this.queryResponseProcessor = new QueryResponseParserStreamImpl();
 	}
 	
 	@Override
@@ -556,12 +556,12 @@ public class AtmosObjectStore implements ObjectStore {
 		}
 	}
 
-	public QueryResponseProcessor getQueryResponseProcessor() {
+	public QueryResponseParser getQueryResponseProcessor() {
 		return queryResponseProcessor;
 	}
 
 	public void setQueryResponseProcessor(
-			QueryResponseProcessor queryResponseProcessor) {
+			QueryResponseParser queryResponseProcessor) {
 		this.queryResponseProcessor = queryResponseProcessor;
 	}
 }

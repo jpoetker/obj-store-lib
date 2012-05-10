@@ -21,10 +21,10 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
-public class QueryResponseProcessorImpl implements QueryResponseProcessor {
+public class QueryResponseParserImpl implements QueryResponseParser {
 	private DocumentBuilderFactory documentBuilderFactory;
 
-	public QueryResponseProcessorImpl() {
+	public QueryResponseParserImpl() {
 		super();
 		documentBuilderFactory = DocumentBuilderFactory.newInstance();
 	}

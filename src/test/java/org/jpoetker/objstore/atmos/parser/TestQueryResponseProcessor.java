@@ -173,12 +173,12 @@ public class TestQueryResponseProcessor {
 			"	</Object>\n" + 
 			"</ListObjectsResponse>";
 
-	private QueryResponseProcessor processor;
+	private QueryResponseParser processor;
 	private HttpResponse mockHttpResponse;
 	
 	@Before
 	public void setUp() throws Exception {
-		processor = new QueryResponseProcessorImpl();
+		processor = new QueryResponseParserImpl();
 		
 		StatusLine mock200 = mock(StatusLine.class);
 		when(mock200.getStatusCode()).thenReturn(new Integer(200));

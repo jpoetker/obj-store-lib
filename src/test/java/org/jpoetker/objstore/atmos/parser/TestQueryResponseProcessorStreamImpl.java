@@ -171,12 +171,12 @@ private static final String objectResonpseWithMetadataXML = "<?xml version='1.0'
 	"	</Object>\n" + 
 	"</ListObjectsResponse>";
 
-	private QueryResponseProcessor processor;
+	private QueryResponseParser processor;
 	private HttpResponse mockHttpResponse;
 
 	@Before
 	public void setUp() throws Exception {
-		processor = new QueryResponseProcessorStreamImpl();
+		processor = new QueryResponseParserStreamImpl();
 
 		StatusLine mock200 = mock(StatusLine.class);
 		when(mock200.getStatusCode()).thenReturn(new Integer(200));

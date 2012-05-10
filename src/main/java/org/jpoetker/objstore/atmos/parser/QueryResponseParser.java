@@ -5,7 +5,7 @@ import org.jpoetker.objstore.ObjectInfo;
 import org.jpoetker.objstore.QueryResults;
 import org.jpoetker.objstore.atmos.AtmosResponse;
 
-public interface QueryResponseProcessor {
+public interface QueryResponseParser {
 	
 	public QueryResults<Identifier> parseObjectIdentifiers(AtmosResponse resposne);
 	

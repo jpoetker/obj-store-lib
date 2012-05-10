@@ -19,7 +19,7 @@ import org.jpoetker.objstore.atmos.AtmosObjectId;
 import org.jpoetker.objstore.atmos.AtmosResponse;
 import org.jpoetker.objstore.atmos.AtmosStorageException;
 
-public class QueryResponseProcessorStreamImpl implements QueryResponseProcessor {
+public class QueryResponseParserStreamImpl implements QueryResponseParser {
 	private static final String LISTABLE_TAG_NAME = "Listable";
 	private static final String VALUE_TAG_NAME = "Value";
 	private static final String NAME_TAG_NAME = "Name";
@@ -32,7 +32,7 @@ public class QueryResponseProcessorStreamImpl implements QueryResponseProcessor 
 	
 	private XMLInputFactory xmlInputFactory;
 	
-	public QueryResponseProcessorStreamImpl() {
+	public QueryResponseParserStreamImpl() {
 		super();
 		this.xmlInputFactory = XMLInputFactory.newFactory();
 	}
@@ -169,7 +169,7 @@ public class QueryResponseProcessorStreamImpl implements QueryResponseProcessor 
 			} else if (stream.isEndElement()) {
 				currentValueTag = null;
 				if ((EMC_NAMESPACE_URI.equals(stream.getName().getNamespaceURI())) &&
-					(valueIn(stream.getName().getLocalPart(), OBJECT_TAG_NAME, METADATA_TAG_NAME, SYSTEM_METADATA_LIST_TAG_NAME, QueryResponseProcessorStreamImpl.USER_METADATA_LIST_TAG_NAME)))
+					(valueIn(stream.getName().getLocalPart(), OBJECT_TAG_NAME, METADATA_TAG_NAME, SYSTEM_METADATA_LIST_TAG_NAME, QueryResponseParserStreamImpl.USER_METADATA_LIST_TAG_NAME)))
 				{ 
 					return true;
 				}

@@ -21,7 +21,7 @@ import org.jpoetker.objstore.Identifier;
 import org.jpoetker.objstore.ObjectInfo;
 import org.jpoetker.objstore.QueryResults;
 import org.jpoetker.objstore.UserContext;
-import org.jpoetker.objstore.atmos.parser.QueryResponseProcessor;
+import org.jpoetker.objstore.atmos.parser.QueryResponseParser;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Matchers;
@@ -172,7 +172,7 @@ public class TestAtmosObjectStore {
 	
 	@Test
 	public void testListObjectsWithMetadata() throws Exception {
-		QueryResponseProcessor mockProcessor = mock(QueryResponseProcessor.class);
+		QueryResponseParser mockProcessor = mock(QueryResponseParser.class);
 		when(mockProcessor.parseObjectInfo(Matchers.any(AtmosResponse.class))).thenReturn(new QueryResults<ObjectInfo>(null, null));
 		
 		when(mockHttpResponse.getStatusLine()).thenReturn(mock200Status);
@@ -210,7 +210,7 @@ public class TestAtmosObjectStore {
 	
 	@Test
 	public void testListObjectsWithMetadataShortForm() throws Exception {
-		QueryResponseProcessor mockProcessor = mock(QueryResponseProcessor.class);
+		QueryResponseParser mockProcessor = mock(QueryResponseParser.class);
 		when(mockProcessor.parseObjectInfo(Matchers.any(AtmosResponse.class))).thenReturn(new QueryResults<ObjectInfo>(null, null));
 		
 		when(mockHttpResponse.getStatusLine()).thenReturn(mock200Status);
