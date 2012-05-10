@@ -357,7 +357,7 @@ class AtmosRequest {
 		SecretKeySpec key = new SecretKeySpec(secret, "HmacSHA1");
 		mac.init(key);
 		
-		byte[] hashedBytes = mac.doFinal(value.getBytes("UTF-8"));
+		byte[] hashedBytes = mac.doFinal(value.getBytes(UTF_8));
 		
 		return new String(Base64.encodeBase64(hashedBytes), UTF_8);
 	}
