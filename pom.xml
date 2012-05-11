@@ -4,11 +4,12 @@
 
 	<groupId>org.jpoetker</groupId>
 	<artifactId>obj-store-lib</artifactId>
-	<version>1.0-SNAPSHOT</version>
+	<version>0.2</version>
 	<packaging>jar</packaging>
 
 	<name>obj-store-lib</name>
-	<url>http://maven.apache.org</url>
+	<description>Java API Bindings to &quot;object storage&quot; (Currently EMC Atmos) </description>
+	<url>https://github.com/jpoetker/obj-store-lib</url>
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -24,6 +25,19 @@
 		</plugins>
 	</reporting>
 
+	<issueManagement>
+		<system>Github</system>
+		<url>https://github.com/jpoetker/obj-store-lib/issues</url>
+	</issueManagement>
+	<scm>
+		<connection>git://github.com/jpoetker/obj-store-lib.git</connection>
+		<developerConnection>Jeff Poetker</developerConnection>
+		<url>https://github.com/jpoetker/obj-store-lib</url>
+	</scm>
+	<organization>
+		<name>Jeff Poetker</name>
+		<url>http://jpoetker.github.com</url>
+	</organization>
 	<build>
 		<plugins>
 			<plugin>
