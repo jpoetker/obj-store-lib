@@ -3,6 +3,7 @@ target/*
 .classpath
 .project
 
+src/test/resources/IntegrationTest.properties
 # Package Files #
 *.jar
 *.war
