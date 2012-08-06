@@ -12,7 +12,6 @@ import org.jpoetker.objstore.Identifier;
 import org.jpoetker.objstore.Metadata;
 import org.jpoetker.objstore.ObjectStore;
 import org.jpoetker.objstore.QueryResults;
-import org.jpoetker.objstore.UserContext;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -46,14 +45,11 @@ public class IntegrationTestAtmosObjectStore {
 		atmosOnlineProperties = ResourceBundle.getBundle("IntegrationTest");
 	}
 	
-	private UserContext userContext;
 	private ObjectStore storage;
 	
 	@Before
 	public void setUp() throws Exception {
-		userContext = new UserContext(atmosOnlineProperties.getString("uid"), atmosOnlineProperties.getString("sharedSecret"));
-		
-		storage = new AtmosObjectStore("api.atmosonline.com");
+		storage = new AtmosObjectStore("api.atmosonline.com", atmosOnlineProperties.getString("uid"), atmosOnlineProperties.getString("sharedSecret"));
 	}
 	
 	private InputStream createInputStream() throws UnsupportedEncodingException {
@@ -65,13 +61,13 @@ public class IntegrationTestAtmosObjectStore {
 		
 		// First create an object in the cloud
 		InputStream in = createInputStream();		
-		Identifier id = storage.createObject(userContext, in, loremIpsum.getBytes("UTF-8").length, "text/plain", new Metadata("Test-Data", "Test", true));
+		Identifier id = storage.createObject(in, loremIpsum.getBytes("UTF-8").length, "text/plain", new Metadata("Test-Data", "Test", true));
 		assertNotNull(id);
 		System.out.println("Object created with ID: " + id.toString());
 		in.close();
 		
 		// Read the object back from the cloud
-		in = storage.readObject(userContext, id);
+		in = storage.readObject(id);
 		byte[] data = new byte[loremIpsum.getBytes("UTF-8").length];
 		// verify it is what we expect
 		in.read(data);
@@ -81,7 +77,7 @@ public class IntegrationTestAtmosObjectStore {
 		in = null;
 		
 		// look at the user metadata
-		Collection<Metadata> metadata = storage.getUserMetadata(userContext, id);
+		Collection<Metadata> metadata = storage.getUserMetadata(id);
 		assertEquals(1, metadata.size());
 		Metadata meta = metadata.iterator().next();
 		System.out.println(meta.toString());
@@ -90,17 +86,17 @@ public class IntegrationTestAtmosObjectStore {
 		assertTrue(meta.isListable());
 		
 		// add some metadata
-		storage.setMetadata(userContext, id, new Metadata("test-name", "test-value", false));
+		storage.setMetadata(id, new Metadata("test-name", "test-value", false));
 		
 		// take another look at the metadata
-		metadata = storage.getUserMetadata(userContext, id);
+		metadata = storage.getUserMetadata(id);
 		assertEquals(2, metadata.size());
 		for (Metadata m : metadata) {
 			System.out.println(m.toString());
 		}
 		
 		// take another look at the system metadata
-		metadata = storage.getSystemMetadata(userContext, id);
+		metadata = storage.getSystemMetadata(id);
 		assertNotNull(metadata);
 		assertTrue("No system metadata returned.", !metadata.isEmpty());
 		for (Metadata m : metadata) {
@@ -110,10 +106,10 @@ public class IntegrationTestAtmosObjectStore {
 
 		// update the data 
 		InputStream upperIn = new ByteArrayInputStream(loremIpsum.toUpperCase().getBytes("UTF-8"));
-		storage.updateObject(userContext, id, upperIn, loremIpsum.getBytes("UTF-8").length, "text/plain");
+		storage.updateObject(id, upperIn, loremIpsum.getBytes("UTF-8").length, "text/plain");
 		upperIn.close();
 		// read it back out
-		in = storage.readObject(userContext, id);
+		in = storage.readObject(id);
 		data = new byte[loremIpsum.getBytes("UTF-8").length];
 		// verify it is as we expect
 		in.read(data);
@@ -122,14 +118,14 @@ public class IntegrationTestAtmosObjectStore {
 		in.close();
 		in = null;
 		
-		QueryResults<Identifier> ids = storage.listObjects(userContext, "Test-Data", 0, null);
+		QueryResults<Identifier> ids = storage.listObjects("Test-Data", 0, null);
 		for (Identifier i : ids.getResults()) {
 			System.out.println(i.toString());
 		}
 		
-		storage.listObjectsWithMetadata(userContext, "Test-Data", 0, null);
+		storage.listObjectsWithMetadata("Test-Data", 0, null);
 		
 		// remove the object from the cloud
-		storage.deleteObject(userContext, id);
+		storage.deleteObject(id);
 	}
 }

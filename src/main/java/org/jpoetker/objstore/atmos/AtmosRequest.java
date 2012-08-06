@@ -39,7 +39,7 @@ import org.jpoetker.objstore.Grantee;
 import org.jpoetker.objstore.Metadata;
 import org.jpoetker.objstore.MetadataTag;
 import org.jpoetker.objstore.ObjectStorageException;
-import org.jpoetker.objstore.UserContext;
+import org.jpoetker.objstore.atmos.auth.AuthenticationCredentialProvider;
 
 class AtmosRequest {
 	private static final String X_EMC_SYSTEM_TAGS_HEADER = "x-emc-system-tags";
@@ -66,17 +66,40 @@ class AtmosRequest {
 	private URL url;
 	private byte[] secret;
 	
-	public AtmosRequest(URL url, UserContext userContext) {
+	public AtmosRequest(URL url, AuthenticationCredentialProvider authProvider) {
 		super();
+		
+		if (authProvider == null) {
+			throw new IllegalArgumentException("An AuthenticationCredentialProvier must be provided to the AtmosObjectStore API");
+		}
+		
+		initializeSecret(authProvider);
 
+		this.url = url;
+		this.headers = new HashMap<String, String>();
+		
+		initializeUid(authProvider);
+	}
+	
+	private void initializeSecret(AuthenticationCredentialProvider authProvider) {
+		String sharedSecret = authProvider.getSharedSecret();
+		if ((sharedSecret == null) || (sharedSecret.trim().length() == 0)) {
+			throw new IllegalArgumentException("No shared secret was provided for accessing object storage.");
+		}
+		
 		try {
-			secret = Base64.decodeBase64(userContext.getSharedSecret().getBytes(UTF_8));
+			secret = Base64.decodeBase64(sharedSecret.getBytes(UTF_8));
 		} catch (UnsupportedEncodingException e) {
 			throw new ObjectStorageException("Could not decode shared secret");
 		}
-		this.url = url;
-		this.headers = new HashMap<String, String>();
-		this.headers.put(X_EMC_UID_HEADER, userContext.getUid());
+	}
+	
+	private void initializeUid(AuthenticationCredentialProvider authProvider) {
+		String uid = authProvider.getUserId();
+		if ((uid == null) || (uid.trim().length() == 0)) {
+			throw new IllegalArgumentException("No user id was provided for accessing object storage.");
+		}
+		this.headers.put(X_EMC_UID_HEADER, uid);
 	}
 	
 	/**

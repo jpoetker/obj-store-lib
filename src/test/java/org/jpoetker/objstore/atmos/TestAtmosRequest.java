@@ -24,7 +24,8 @@ import org.jpoetker.objstore.Grantee;
 import org.jpoetker.objstore.Metadata;
 import org.jpoetker.objstore.MetadataTag;
 import org.jpoetker.objstore.Permission;
-import org.jpoetker.objstore.UserContext;
+import org.jpoetker.objstore.atmos.auth.AuthenticationCredentialProvider;
+import org.jpoetker.objstore.atmos.auth.SimpleAuthenticationCredentialProvider;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -47,9 +48,10 @@ public class TestAtmosRequest {
 	
 	@Before
 	public void setUp() throws Exception {
-		UserContext userContext = new UserContext("userid", testSecret);
+		
+		AuthenticationCredentialProvider authProvider = new SimpleAuthenticationCredentialProvider("userid", testSecret);
 	    testUrl = new URL("http://localhost/rest/objects");
-		request = new AtmosRequest(testUrl, userContext);
+		request = new AtmosRequest(testUrl, authProvider);
 	}
 	
 	@Test

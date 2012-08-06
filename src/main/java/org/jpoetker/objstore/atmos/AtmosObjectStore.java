@@ -31,7 +31,8 @@ import org.jpoetker.objstore.ObjectInfo;
 import org.jpoetker.objstore.ObjectStorageException;
 import org.jpoetker.objstore.ObjectStore;
 import org.jpoetker.objstore.QueryResults;
-import org.jpoetker.objstore.UserContext;
+import org.jpoetker.objstore.atmos.auth.AuthenticationCredentialProvider;
+import org.jpoetker.objstore.atmos.auth.SimpleAuthenticationCredentialProvider;
 import org.jpoetker.objstore.atmos.parser.QueryResponseParser;
 import org.jpoetker.objstore.atmos.parser.QueryResponseParserStreamImpl;
 
@@ -43,9 +44,10 @@ public class AtmosObjectStore implements ObjectStore {
 	private String contextRoot = "/rest";
 	private HttpClient httpClient;
 	private QueryResponseParser queryResponseProcessor;
+	private AuthenticationCredentialProvider authenticationCredentialProvider;
 	
 	public AtmosObjectStore() {
-		this(null);
+		this(null, null, null);
 	}
 	
 	/**
@@ -53,8 +55,8 @@ public class AtmosObjectStore implements ObjectStore {
 	 * 
 	 * @param host The Atmos server host name or IP Address
 	 */
-	public AtmosObjectStore(String host) {
-		this(host, 80, "http");
+	public AtmosObjectStore(String host, String uid, String sharedSecret) {
+		this(host, 80, "http", uid, sharedSecret);
 	}
 	
 	/**
@@ -66,8 +68,12 @@ public class AtmosObjectStore implements ObjectStore {
 	 * @param host The Atmos server host name or IP Address
 	 * @param port The Atmos server port
 	 */
-	public AtmosObjectStore(String host, int port) {
-		this(host, port, (port == 443) ? "https" : "http");
+	public AtmosObjectStore(String host, int port, String uid, String sharedSecret) {
+		this(host, port, (port == 443) ? "https" : "http", uid, sharedSecret);
+	}
+	
+	public AtmosObjectStore(String host, int port, AuthenticationCredentialProvider authProvider) {
+		this(host, port, (port == 443) ? "https" : "http", authProvider, null);
 	}
 	
 	/**
@@ -77,56 +83,61 @@ public class AtmosObjectStore implements ObjectStore {
 	 * @param port The Atmos server port
 	 * @param scheme "http" or "https"
 	 */
-	public AtmosObjectStore(String host, int port, String scheme) {
-		this(host, port, scheme, null);
+	public AtmosObjectStore(String host, int port, String scheme, String uid, String sharedSecret) {
+		this(host, port, scheme, new SimpleAuthenticationCredentialProvider(uid, sharedSecret), null);
 	}
 	
-	public AtmosObjectStore(String host, int port, String scheme, HttpClient httpClient) {
+	public AtmosObjectStore(String host, int port, String scheme, AuthenticationCredentialProvider authProvider) {
+		this(host, port, scheme, authProvider, null);
+	}
+
+	public AtmosObjectStore(String host, int port, String scheme, AuthenticationCredentialProvider authProvider, HttpClient httpClient) {
+		super();
 		this.host = host;
 		this.port = port;
 		this.scheme = (scheme != null) ? scheme.toLowerCase() : ((port == 443) ? "https" : "http");
 		this.httpClient = httpClient;
 		this.queryResponseProcessor = new QueryResponseParserStreamImpl();
+		this.authenticationCredentialProvider = authProvider;
 	}
 	
 	@Override
-	public Identifier createObject(UserContext userContext, InputStream data,
+	public Identifier createObject(InputStream data,
 			long length, String mimeType) throws ObjectStorageException {
-		return createObject(userContext, data, length, mimeType, null, null);
+		return createObject(data, length, mimeType, null, null);
 	}
 
 	@Override
-	public Identifier createObject(UserContext userContext, InputStream data,
+	public Identifier createObject(InputStream data,
 			long length, String mimeType, Collection<Metadata> metadata)
 			throws ObjectStorageException {
-		return createObject(userContext, data, length, mimeType, null, metadata);
+		return createObject(data, length, mimeType, null, metadata);
 	}
 
 	@Override
-	public Identifier createObject(UserContext userContext, InputStream data,
+	public Identifier createObject(InputStream data,
 			long length, String mimeType, Metadata... metadata) throws ObjectStorageException {
-		return createObject(userContext, data, length, mimeType, null, Arrays.asList(metadata));
+		return createObject(data, length, mimeType, null, Arrays.asList(metadata));
 	}
 
 	@Override
-	public Identifier createObject(UserContext userContext, InputStream data,
+	public Identifier createObject(InputStream data,
 			long length, String mimeType, Set<Grant> acl) throws ObjectStorageException {
-		return createObject(userContext, data, length, mimeType, acl, null);
+		return createObject(data, length, mimeType, acl, null);
 	}
 
 	@Override
-	public Identifier createObject(UserContext userContext, InputStream data,
+	public Identifier createObject(InputStream data,
 			long length, String mimeType, Set<Grant> acl, Collection<Metadata> metadata)
 			throws ObjectStorageException {
 		AtmosResponse response = null;
 		
-		validateUserContext(userContext);
 		validateInputStreamParamaters(data, length);
 		
 		try {
 			URL url = buildUrl(getContextRoot() + "/objects", null);
 			
-			AtmosRequest request = new AtmosRequest(url, userContext);
+			AtmosRequest request = new AtmosRequest(url, getAuthenticationCredentialProvider());
 			
 			request.setContentType(mimeType);
 			request.setAcl(acl);
@@ -149,48 +160,47 @@ public class AtmosObjectStore implements ObjectStore {
 	}
 
 	@Override
-	public void updateObject(UserContext userContext, Identifier id,
+	public void updateObject(Identifier id,
 			InputStream data, long length, String mimeType) throws ObjectStorageException {
-		updateObject(userContext, id, data, length, mimeType, null, null);
+		updateObject(id, data, length, mimeType, null, null);
 	}
 
 	@Override
-	public void updateObject(UserContext userContext, Identifier id,
+	public void updateObject(Identifier id,
 			InputStream data, long length, String mimeType, Collection<Metadata> metadata)
 			throws ObjectStorageException {
-		updateObject(userContext, id, data, length, mimeType, null, metadata);
+		updateObject(id, data, length, mimeType, null, metadata);
 	}
 
 	@Override
-	public void updateObject(UserContext userContext, Identifier id,
+	public void updateObject(Identifier id,
 			InputStream data, long length, String mimeType, Metadata... metadata)
 			throws ObjectStorageException {
-		updateObject(userContext, id, data, length, null, (metadata != null) ? Arrays.asList(metadata) : null);
+		updateObject(id, data, length, null, (metadata != null) ? Arrays.asList(metadata) : null);
 		
 	}
 
 	@Override
-	public void updateObject(UserContext userContext, Identifier id,
+	public void updateObject(Identifier id,
 			InputStream data, long length, String mimeType, Set<Grant> acl)
 			throws ObjectStorageException {
-		updateObject(userContext, id, data, length, mimeType, acl, null);
+		updateObject(id, data, length, mimeType, acl, null);
 		
 	}
 
 	@Override
-	public void updateObject(UserContext userContext, Identifier id,
+	public void updateObject(Identifier id,
 			InputStream data, long length, String mimeType,
 			Set<Grant> acl, Collection<Metadata> metadata) throws ObjectStorageException {
 		
 		AtmosResponse response = null;
 		
-		validateUserContext(userContext);
 		validateInputStreamParamaters(data, length);
 		
 		try {
 			URL url = buildUrl(((AtmosIdentifier) id).getResourcePath(getContextRoot()), null);
 			
-			AtmosRequest request = new AtmosRequest(url, userContext);
+			AtmosRequest request = new AtmosRequest(url, getAuthenticationCredentialProvider());
 			
 			request.setContentType(mimeType);
 			request.setMetadata(metadata);
@@ -212,14 +222,14 @@ public class AtmosObjectStore implements ObjectStore {
 	}
 
 	@Override
-	public void setMetadata(UserContext userContext, Identifier id,
+	public void setMetadata(Identifier id,
 			Collection<Metadata> metadata) throws ObjectStorageException {
 		AtmosResponse response = null;
 		
 		try {
 			URL url = buildUrl(((AtmosIdentifier) id).getResourcePath(getContextRoot()), "metadata/user");
 			
-			AtmosRequest request = new AtmosRequest(url, userContext);
+			AtmosRequest request = new AtmosRequest(url, getAuthenticationCredentialProvider());
 			
 			request.setMetadata(metadata);
 			
@@ -238,26 +248,50 @@ public class AtmosObjectStore implements ObjectStore {
 	}
 
 	@Override
-	public void setMetadata(UserContext userContext, Identifier id,
+	public void setMetadata(Identifier id,
 			Metadata... metadata) {
-		setMetadata(userContext, id, (metadata != null) ? Arrays.asList(metadata) : null);
+		setMetadata(id, (metadata != null) ? Arrays.asList(metadata) : null);
 	}
 
 	@Override
-	public Collection<Metadata> getUserMetadata(UserContext userContext, Identifier id) {
+	public Collection<Metadata> getUserMetadata(Identifier id) {
 		Collection<MetadataTag> tags = Collections.emptyList();
-		return getUserMetadata(userContext, id, tags);
+		return getUserMetadata(id, tags);
 	}
 
 	@Override
-	public Collection<Metadata> getUserMetadata(UserContext userContext,
-			Identifier id, Collection<MetadataTag> metadatatags) {
-		return getMetadata(userContext, id, metadatatags, "metadata/user");
+	public Collection<Metadata> getUserMetadata(Identifier id, Collection<MetadataTag> metadatatags) {
+		return getMetadata(id, metadatatags, "metadata/user");
 	}
 
 	@Override
-	public Collection<Metadata> getUserMetadata(UserContext userContext,
-			Identifier id, MetadataTag... metadatatags)
+	public Collection<Metadata> getUserMetadata(Identifier id, MetadataTag... metadatatags)
+			throws ObjectStorageException 
+	{
+		List<MetadataTag> tags;
+		
+		if (metadatatags != null) {
+			tags = Arrays.asList(metadatatags);
+		} else {
+			tags = Collections.emptyList();
+		}
+		
+		return getUserMetadata(id, tags);
+	}
+
+	@Override
+	public Collection<Metadata> getSystemMetadata(Identifier id) {
+		Collection<MetadataTag> tags = Collections.emptyList();
+		return getSystemMetadata(id, tags);
+	}
+
+	@Override
+	public Collection<Metadata> getSystemMetadata(Identifier id, Collection<MetadataTag> metadatatags) {
+		return getMetadata(id, metadatatags, "metadata/system");
+	}
+
+	@Override
+	public Collection<Metadata> getSystemMetadata(Identifier id, MetadataTag... metadatatags)
 			throws ObjectStorageException {
 		List<MetadataTag> tags;
 		
@@ -267,46 +301,17 @@ public class AtmosObjectStore implements ObjectStore {
 			tags = Collections.emptyList();
 		}
 		
-		return getUserMetadata(userContext, id, tags);
-	}
-
-	@Override
-	public Collection<Metadata> getSystemMetadata(UserContext userContext, Identifier id) {
-		Collection<MetadataTag> tags = Collections.emptyList();
-		return getSystemMetadata(userContext, id, tags);
-	}
-
-	@Override
-	public Collection<Metadata> getSystemMetadata(UserContext userContext,
-			Identifier id, Collection<MetadataTag> metadatatags) {
-		return getMetadata(userContext, id, metadatatags, "metadata/system");
-	}
-
-	@Override
-	public Collection<Metadata> getSystemMetadata(UserContext userContext,
-			Identifier id, MetadataTag... metadatatags)
-			throws ObjectStorageException {
-		List<MetadataTag> tags;
-		
-		if (metadatatags != null) {
-			tags = Arrays.asList(metadatatags);
-		} else {
-			tags = Collections.emptyList();
-		}
-		
-		return getSystemMetadata(userContext, id, tags);
+		return getSystemMetadata(id, tags);
 	}
 	
 	
-	private Collection<Metadata>getMetadata(UserContext userContext, Identifier id, Collection<MetadataTag> metadatatags, String path) {
+	private Collection<Metadata>getMetadata(Identifier id, Collection<MetadataTag> metadatatags, String path) {
 		AtmosResponse response = null;
-		
-		validateUserContext(userContext);
 		
 		try {
 			URL url = buildUrl(((AtmosIdentifier) id).getResourcePath(getContextRoot()), path);
 			
-			AtmosRequest request = new AtmosRequest(url, userContext);
+			AtmosRequest request = new AtmosRequest(url, getAuthenticationCredentialProvider());
 			
 			request.setMetadataTags(metadatatags);
 			
@@ -332,16 +337,14 @@ public class AtmosObjectStore implements ObjectStore {
 	 * @throws ObjectStorageException when things go wrong
 	 */
 	@Override
-	public void deleteObject(UserContext userContext, Identifier id)
+	public void deleteObject(Identifier id)
 			throws ObjectStorageException {
 		AtmosResponse response = null;
-		
-		validateUserContext(userContext);
 		
 		try {
 			URL url = buildUrl(((AtmosIdentifier) id).getResourcePath(getContextRoot()), null);
 			
-			AtmosRequest request = new AtmosRequest(url, userContext);
+			AtmosRequest request = new AtmosRequest(url, getAuthenticationCredentialProvider());
 			
 			response = execute(request.createDelete());
 			
@@ -369,14 +372,13 @@ public class AtmosObjectStore implements ObjectStore {
 	 * @throws ObjectStorageException when anything goes wrong 
 	 */
 	@Override
-	public InputStream readObject(UserContext userContext, Identifier id) {
+	public InputStream readObject(Identifier id) {
 		AtmosResponse response = null;
-		validateUserContext(userContext);
-		
+
 		try {
 			URL url = buildUrl(((AtmosIdentifier) id).getResourcePath(getContextRoot()), null);
 			
-			AtmosRequest request = new AtmosRequest(url, userContext);
+			AtmosRequest request = new AtmosRequest(url, getAuthenticationCredentialProvider());
 			
 			response = execute(request.createGet());
 		
@@ -391,16 +393,15 @@ public class AtmosObjectStore implements ObjectStore {
 	}
 
 	@Override
-	public QueryResults<Identifier> listObjects(UserContext userContext, String tag, int limit, String continuationToken) {
+	public QueryResults<Identifier> listObjects(String tag, int limit, String continuationToken) {
 		AtmosResponse response = null;
 		
-		validateUserContext(userContext);
 		if (tag == null) throw new AtmosStorageException("Tag cannot be null");
 		
 		try {
 			URL url = buildUrl(getContextRoot() + "/objects", null);
 			
-			AtmosRequest request = new AtmosRequest(url, userContext);
+			AtmosRequest request = new AtmosRequest(url, getAuthenticationCredentialProvider());
 			request.setTag(tag);
 			request.setLimit(limit);
 			request.setContinuationToken(continuationToken);
@@ -419,25 +420,23 @@ public class AtmosObjectStore implements ObjectStore {
 		}
 	}
 	@Override
-	public QueryResults<ObjectInfo> listObjectsWithMetadata(UserContext userContext, String tag, int limit, String continuationToken) {
-		return listObjectsWithMetadata(userContext, tag, null, null, limit, continuationToken);
+	public QueryResults<ObjectInfo> listObjectsWithMetadata(String tag, int limit, String continuationToken) {
+		return listObjectsWithMetadata(tag, null, null, limit, continuationToken);
 	}
     
 	@Override
-    public QueryResults<ObjectInfo> listObjectsWithMetadata(UserContext userContext, String tag, Collection<String> userMetadataTags, int limit, String continuationToken) {
-		return listObjectsWithMetadata(userContext, tag, userMetadataTags, null, limit, continuationToken);
+    public QueryResults<ObjectInfo> listObjectsWithMetadata(String tag, Collection<String> userMetadataTags, int limit, String continuationToken) {
+		return listObjectsWithMetadata(tag, userMetadataTags, null, limit, continuationToken);
 	}
 	
 	@Override
-    public QueryResults<ObjectInfo> listObjectsWithMetadata(UserContext userContext, String tag, Collection<String> userMetadataTags, Collection<String> systemMetadataTags, int limit, String continuationToken) {
+    public QueryResults<ObjectInfo> listObjectsWithMetadata(String tag, Collection<String> userMetadataTags, Collection<String> systemMetadataTags, int limit, String continuationToken) {
 		AtmosResponse response = null;
-		
-		validateUserContext(userContext);
-		
+
 		try {
 			URL url = buildUrl(getContextRoot() + "/objects", null);
 			
-			AtmosRequest request = new AtmosRequest(url, userContext);
+			AtmosRequest request = new AtmosRequest(url, getAuthenticationCredentialProvider());
 			request.setTag(tag);
 			request.setLimit(limit);
 			request.setContinuationToken(continuationToken);
@@ -530,18 +529,6 @@ public class AtmosObjectStore implements ObjectStore {
 			throw new IllegalArgumentException("The length of bytes in the stream must be greater than 0");
 		}
 	}
-	
-	private void validateUserContext(UserContext userContext) {
-		if (userContext == null) {
-			throw new IllegalArgumentException("A valid UserContext must be provided.");
-		}
-		if ((userContext.getUid() == null) || (userContext.getUid().trim().length() == 0)) {
-			throw new IllegalArgumentException("A valid UID must be provided in the UserContext.");
-		}
-		if ((userContext.getSharedSecret() == null) || (userContext.getSharedSecret().trim().length() == 0)) {
-			throw new IllegalArgumentException("A valid shared secret must be provided in the UserContext.");
-		}
-	}
 
 	private AtmosResponse execute(HttpUriRequest request) throws ClientProtocolException, IOException {
 		return new AtmosResponse(getHttpClient().execute(request));
@@ -563,5 +550,13 @@ public class AtmosObjectStore implements ObjectStore {
 	public void setQueryResponseProcessor(
 			QueryResponseParser queryResponseProcessor) {
 		this.queryResponseProcessor = queryResponseProcessor;
+	}
+
+	public AuthenticationCredentialProvider getAuthenticationCredentialProvider() {
+		return authenticationCredentialProvider;
+	}
+
+	public void setAuthenticationCredentialProvider(AuthenticationCredentialProvider authenticationCredentialProvider) {
+		this.authenticationCredentialProvider = authenticationCredentialProvider;
 	}
 }

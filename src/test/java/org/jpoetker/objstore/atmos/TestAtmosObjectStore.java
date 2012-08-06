@@ -20,7 +20,7 @@ import org.apache.http.message.BasicHeader;
 import org.jpoetker.objstore.Identifier;
 import org.jpoetker.objstore.ObjectInfo;
 import org.jpoetker.objstore.QueryResults;
-import org.jpoetker.objstore.UserContext;
+import org.jpoetker.objstore.atmos.auth.SimpleAuthenticationCredentialProvider;
 import org.jpoetker.objstore.atmos.parser.QueryResponseParser;
 import org.junit.Before;
 import org.junit.Test;
@@ -32,7 +32,6 @@ public class TestAtmosObjectStore {
 
 	private AtmosObjectStore objectStore;
 	private HttpClient mockHttpClient;
-	private UserContext userContext;
 	private HttpResponse mockHttpResponse;
 	private StatusLine mock200Status;
 	
@@ -43,8 +42,7 @@ public class TestAtmosObjectStore {
 		objectStore = new AtmosObjectStore();
 		objectStore.setHost("localhost");
 		objectStore.setHttpClient(mockHttpClient);
-		
-		userContext = new UserContext("testuid", TestAtmosRequest.testSecret);
+		objectStore.setAuthenticationCredentialProvider(new SimpleAuthenticationCredentialProvider("testuid", TestAtmosRequest.testSecret));
 		
 		mockHttpResponse = mock(HttpResponse.class);
 		
@@ -69,7 +67,7 @@ public class TestAtmosObjectStore {
 		IllegalArgumentException ex = null;
 		
 		try {
-			objectStore.createObject(userContext, null, 120, "application/octet-stream");
+			objectStore.createObject(null, 120, "application/octet-stream");
 		} catch (IllegalArgumentException e) {
 			ex = e;
 		}
@@ -82,7 +80,7 @@ public class TestAtmosObjectStore {
 		InputStream in = mock(InputStream.class);
 		
 		try {
-			objectStore.createObject(userContext, in, -120, "application/octet-stream");
+			objectStore.createObject(in, -120, "application/octet-stream");
 		} catch (IllegalArgumentException e) {
 			ex = e;
 		}
@@ -90,7 +88,7 @@ public class TestAtmosObjectStore {
 		
 		ex = null;
 		try {
-			objectStore.createObject(userContext, in, 0, "application/octet-stream");
+			objectStore.createObject(in, 0, "application/octet-stream");
 		} catch (IllegalArgumentException e) {
 			ex = e;
 		}
@@ -102,7 +100,7 @@ public class TestAtmosObjectStore {
 		when(mockHttpResponse.getFirstHeader("location")).thenReturn(new BasicHeader("location", "/rest/objects/00000000000000000000000000000000000000000000"));
 		
 		try {
-			Identifier id = objectStore.createObject(userContext, in, 10, "application/octet-stream");
+			Identifier id = objectStore.createObject(in, 10, "application/octet-stream");
 			assertEquals("00000000000000000000000000000000000000000000", id.toString());
 		} catch (IllegalArgumentException e) {
 			ex = e;
@@ -115,8 +113,9 @@ public class TestAtmosObjectStore {
 		IllegalArgumentException iax = null;
 		InputStream in = mock(InputStream.class);
 		
+		objectStore.setAuthenticationCredentialProvider(null);
 		try {
-			objectStore.createObject(null, in, 100, null);
+			objectStore.createObject(in, 100, null);
 		} catch (IllegalArgumentException e) {
 			iax = e;
 		}
@@ -124,16 +123,16 @@ public class TestAtmosObjectStore {
 		
 		iax = null;
 		try {
-			UserContext userContext = new UserContext(null, "secret");
-			objectStore.createObject(userContext, in, 100, null);
+			objectStore.setAuthenticationCredentialProvider(new SimpleAuthenticationCredentialProvider(null, "secret"));
+			objectStore.createObject(in, 100, null);
 		} catch (IllegalArgumentException e) {
 			iax = e;
 		}
 		assertNotNull("Expected an IllegalArgumentException when passing a UserContext with invalid uid", iax);
 		iax = null;
 		try {
-			UserContext userContext = new UserContext("uid", null);
-			objectStore.createObject(userContext, in, 100, null);
+			objectStore.setAuthenticationCredentialProvider(new SimpleAuthenticationCredentialProvider("uid", null));
+			objectStore.createObject(in, 100, null);
 		} catch (IllegalArgumentException e) {
 			iax = e;
 		}
@@ -149,7 +148,7 @@ public class TestAtmosObjectStore {
 		when(mockHttpResponse.getStatusLine()).thenReturn(mock200Status);
 		when(mockHttpResponse.getFirstHeader("location")).thenReturn(new BasicHeader("location", "/rest/objects/00000000000000000000000000000000000000000000"));
 		
-		Identifier id = objectStore.createObject(userContext, mockInputStream, 100, "application/pdf"); // because the httpclient is a mock object - nothing will get read from the stream
+		Identifier id = objectStore.createObject(mockInputStream, 100, "application/pdf"); // because the httpclient is a mock object - nothing will get read from the stream
 		assertEquals("00000000000000000000000000000000000000000000", id.toString());
 		
 		verify(mockHttpClient, times(1)).execute((HttpUriRequest) Matchers.any(HttpPost.class));
@@ -164,7 +163,7 @@ public class TestAtmosObjectStore {
 		when(mockHttpResponse.getStatusLine()).thenReturn(mock200Status);
 		when(mockHttpResponse.getFirstHeader("location")).thenReturn(new BasicHeader("location", "/rest/objects/00000000000000000000000000000000000000000000"));
 		
-		objectStore.updateObject(userContext, new AtmosObjectId("00000000000000000000000000000000000000000000"), mockInputStream, 100, "application/pdf"); // because the httpclient is a mock object - nothing will get read from the stream
+		objectStore.updateObject(new AtmosObjectId("00000000000000000000000000000000000000000000"), mockInputStream, 100, "application/pdf"); // because the httpclient is a mock object - nothing will get read from the stream
 		
 		verify(mockHttpClient, times(1)).execute((HttpUriRequest) Matchers.any(HttpPut.class));
 		verify(mockHttpResponse, times(1)).getStatusLine();
@@ -200,7 +199,7 @@ public class TestAtmosObjectStore {
 		tags.add("metadata-test-tag");
 		tags.add("metadata-test-tag-2");
 		
-		objectStore.listObjectsWithMetadata(userContext, "test-tag", tags, tags, 100, "ctoken");
+		objectStore.listObjectsWithMetadata("test-tag", tags, tags, 100, "ctoken");
 		
 		verify(mockHttpResponse, atLeast(1)).getStatusLine();
 		verify(mockHttpClient, times(1)).execute(Matchers.any(HttpGet.class));
@@ -234,7 +233,7 @@ public class TestAtmosObjectStore {
 		});
 		objectStore.setQueryResponseProcessor(mockProcessor);
 		
-		objectStore.listObjectsWithMetadata(userContext, "test-tag", 0, null);
+		objectStore.listObjectsWithMetadata("test-tag", 0, null);
 		
 		verify(mockHttpResponse, atLeast(1)).getStatusLine();
 		verify(mockHttpClient, times(1)).execute(Matchers.any(HttpGet.class));
