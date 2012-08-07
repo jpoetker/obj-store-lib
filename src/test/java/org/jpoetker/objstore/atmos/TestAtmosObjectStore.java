@@ -17,7 +17,6 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpPut;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.message.BasicHeader;
-import org.jpoetker.objstore.Identifier;
 import org.jpoetker.objstore.ObjectInfo;
 import org.jpoetker.objstore.QueryResults;
 import org.jpoetker.objstore.atmos.auth.SimpleAuthenticationCredentialProvider;
@@ -100,7 +99,7 @@ public class TestAtmosObjectStore {
 		when(mockHttpResponse.getFirstHeader("location")).thenReturn(new BasicHeader("location", "/rest/objects/00000000000000000000000000000000000000000000"));
 		
 		try {
-			Identifier id = objectStore.createObject(in, 10, "application/octet-stream");
+			String id = objectStore.createObject(in, 10, "application/octet-stream");
 			assertEquals("00000000000000000000000000000000000000000000", id.toString());
 		} catch (IllegalArgumentException e) {
 			ex = e;
@@ -148,7 +147,7 @@ public class TestAtmosObjectStore {
 		when(mockHttpResponse.getStatusLine()).thenReturn(mock200Status);
 		when(mockHttpResponse.getFirstHeader("location")).thenReturn(new BasicHeader("location", "/rest/objects/00000000000000000000000000000000000000000000"));
 		
-		Identifier id = objectStore.createObject(mockInputStream, 100, "application/pdf"); // because the httpclient is a mock object - nothing will get read from the stream
+		String id = objectStore.createObject(mockInputStream, 100, "application/pdf"); // because the httpclient is a mock object - nothing will get read from the stream
 		assertEquals("00000000000000000000000000000000000000000000", id.toString());
 		
 		verify(mockHttpClient, times(1)).execute((HttpUriRequest) Matchers.any(HttpPost.class));
@@ -163,7 +162,7 @@ public class TestAtmosObjectStore {
 		when(mockHttpResponse.getStatusLine()).thenReturn(mock200Status);
 		when(mockHttpResponse.getFirstHeader("location")).thenReturn(new BasicHeader("location", "/rest/objects/00000000000000000000000000000000000000000000"));
 		
-		objectStore.updateObject(new AtmosObjectId("00000000000000000000000000000000000000000000"), mockInputStream, 100, "application/pdf"); // because the httpclient is a mock object - nothing will get read from the stream
+		objectStore.updateObject("00000000000000000000000000000000000000000000", mockInputStream, 100, "application/pdf"); // because the httpclient is a mock object - nothing will get read from the stream
 		
 		verify(mockHttpClient, times(1)).execute((HttpUriRequest) Matchers.any(HttpPut.class));
 		verify(mockHttpResponse, times(1)).getStatusLine();

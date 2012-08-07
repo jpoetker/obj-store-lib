@@ -14,11 +14,11 @@ public interface ObjectStore {
 	 * @param length The length of the stream in bytes.
 	 * @param mimeType The MimeType of the object being stored.
 	 * 		  If set to null, will default to "application/octet-stream"
-	 * @returns Identifier of the newly created object.
+	 * @returns String of the newly created object.
 	 * 
 	 * @throws ObjectStorageException if the request fails
 	 */
-	Identifier createObject(InputStream data, long length, String mimeType) throws ObjectStorageException;
+	String createObject(InputStream data, long length, String mimeType) throws ObjectStorageException;
 	
 	/**
 	 * Creates a new object in the cloud.
@@ -28,13 +28,13 @@ public interface ObjectStore {
 	 * @param length The length of the stream in bytes.
 	 * @param mimeType TODO
 	 * @param metadata A collection of Metadata to be associated with the object
-	 * @returns Identifier of the newly created object.
+	 * @returns String of the newly created object.
 	 * 
 	 * @throws ObjectStorageException if the request fails
 	 */
-	Identifier createObject(InputStream data, long length, String mimeType, Collection<Metadata> metadata) throws ObjectStorageException;
+	String createObject(InputStream data, long length, String mimeType, Collection<Metadata> metadata) throws ObjectStorageException;
 	
-	Identifier createObject(InputStream data, long length, String mimeType, Metadata ... metadata) throws ObjectStorageException;
+	String createObject(InputStream data, long length, String mimeType, Metadata ... metadata) throws ObjectStorageException;
 	
 	/**
 	 * Creates a new object in the cloud.
@@ -45,11 +45,11 @@ public interface ObjectStore {
 	 * @param mimeType TODO
 	 * @param acl A set of Grant objects to make up the access control list for this object.
 	 * 		  May be null to use the default acl.
-	 * @returns Identifier of the newly created object.
+	 * @returns String of the newly created object.
 	 * 
 	 * @throws ObjectStorageException if the request fails
 	 */
-	Identifier createObject(InputStream data, long length, String mimeType, Set<Grant> acl) throws ObjectStorageException;
+	String createObject(InputStream data, long length, String mimeType, Set<Grant> acl) throws ObjectStorageException;
 	
 	/**
 	 * Creates a new object in the cloud.
@@ -61,11 +61,11 @@ public interface ObjectStore {
 	 * @param acl A set of Grant objects to make up the access control list for this object.
 	 * 		  May be null to use the default acl.
 	 * @param metadata A collection of Metadata to be associated with the object
-	 * @returns Identifier of the newly created object.
+	 * @returns String of the newly created object.
 	 * 
 	 * @throws ObjectStorageException if the request fails
 	 */
-	Identifier createObject(InputStream data, long length, String mimeType, Set<Grant> acl, Collection<Metadata> metadata) throws ObjectStorageException;
+	String createObject(InputStream data, long length, String mimeType, Set<Grant> acl, Collection<Metadata> metadata) throws ObjectStorageException;
 	
 	/**
 	 * Updates an object in the cloud.
@@ -76,7 +76,7 @@ public interface ObjectStore {
 	 * @param mimeType TODO
 	 * @throws ObjectStorageException if the request fails
 	 */
-	void updateObject(Identifier id, InputStream data, long length, String mimeType) throws ObjectStorageException;
+	void updateObject(String id, InputStream data, long length, String mimeType) throws ObjectStorageException;
 	
 	/**
 	 * Updates an object in the cloud.
@@ -88,9 +88,9 @@ public interface ObjectStore {
 	 * @param metadata The collection of metadata to be set on the object
 	 * @throws ObjectStorageException if the request fails
 	 */
-	void updateObject(Identifier id, InputStream data, long length, String mimeType, Collection<Metadata> metadata) throws ObjectStorageException;
+	void updateObject(String id, InputStream data, long length, String mimeType, Collection<Metadata> metadata) throws ObjectStorageException;
 	
-	void updateObject(Identifier id, InputStream data, long length, String mimeType, Metadata ... metadata) throws ObjectStorageException;
+	void updateObject(String id, InputStream data, long length, String mimeType, Metadata ... metadata) throws ObjectStorageException;
 	
 	/**
 	 * Updates an object in the cloud.
@@ -103,7 +103,7 @@ public interface ObjectStore {
 	 *        May be <code>null</code> in which case the ACL for the object will remain unchanged.
 	 * @throws ObjectStorageException if the request fails
 	 */
-	void updateObject(Identifier id, InputStream data, long length, String mimeType, Set<Grant> acl) throws ObjectStorageException;
+	void updateObject(String id, InputStream data, long length, String mimeType, Set<Grant> acl) throws ObjectStorageException;
 	
 	/**
 	 * Updates an object in the cloud.
@@ -117,21 +117,21 @@ public interface ObjectStore {
 	 * @param metadata The collection of metadata to be set on the object
 	 * @throws ObjectStorageException if the request fails
 	 */
-	void updateObject(Identifier id, InputStream data, long length, String mimeType, Set<Grant> acl, Collection<Metadata> metadata) throws ObjectStorageException;
+	void updateObject(String id, InputStream data, long length, String mimeType, Set<Grant> acl, Collection<Metadata> metadata) throws ObjectStorageException;
 	
 	/**
      * Writes the Metadata into the object. If the tag does not exist, it is 
      * created and set to the corresponding value. If the tag exists, the 
      * existing value is replaced.
      * 
-     * @param id the Identifier of the object to update
+     * @param id the String of the object to update
      * @param metadata Metadata to write to the object.
      * 
 	 * @throws ObjectStorageException if the request fails
      */
-    void setMetadata(Identifier id, Collection<Metadata> metadata) throws ObjectStorageException;
+    void setMetadata(String id, Collection<Metadata> metadata) throws ObjectStorageException;
     
-    void setMetadata(Identifier id, Metadata ... metadata) throws ObjectStorageException;
+    void setMetadata(String id, Metadata ... metadata) throws ObjectStorageException;
     
     /**
      * Fetches all user metadata for the object.
@@ -142,7 +142,7 @@ public interface ObjectStore {
 	 * 
 	 * @throws ObjectStorageException if the request fails
      */
-    Collection<Metadata> getUserMetadata(Identifier id) throws ObjectStorageException;
+    Collection<Metadata> getUserMetadata(String id) throws ObjectStorageException;
     
     /**
      * Fetches the specified user metadata for the object.
@@ -154,8 +154,8 @@ public interface ObjectStore {
 	 * 
 	 * @throws ObjectStorageException if the request fails
      */
-    Collection<Metadata> getUserMetadata(Identifier id, Collection<MetadataTag> metadatatags) throws ObjectStorageException;
-    Collection<Metadata> getUserMetadata(Identifier id, MetadataTag ... metadatatags) throws ObjectStorageException;
+    Collection<Metadata> getUserMetadata(String id, Collection<MetadataTag> metadatatags) throws ObjectStorageException;
+    Collection<Metadata> getUserMetadata(String id, MetadataTag ... metadatatags) throws ObjectStorageException;
     
     /**
      * Fetches all system metadata for the object.
@@ -166,7 +166,7 @@ public interface ObjectStore {
      * 
      * @throws ObjectStorageException if the request fails
      */
-    public Collection<Metadata> getSystemMetadata(Identifier id);
+    public Collection<Metadata> getSystemMetadata(String id);
     
     /**
      * Fetches the system metadata for the object.
@@ -179,8 +179,8 @@ public interface ObjectStore {
      * 
      * @throws ObjectStorageException if the request fails
      */
-    public Collection<Metadata> getSystemMetadata(Identifier id, Collection<MetadataTag> tags);
-    public Collection<Metadata> getSystemMetadata(Identifier id, MetadataTag ... tags);
+    public Collection<Metadata> getSystemMetadata(String id, Collection<MetadataTag> tags);
+    public Collection<Metadata> getSystemMetadata(String id, MetadataTag ... tags);
     
     /**
      * Deletes an object from the cloud.
@@ -189,7 +189,7 @@ public interface ObjectStore {
      * 
 	 * @throws ObjectStorageException if the request fails
      */
-    void deleteObject(Identifier id) throws ObjectStorageException;
+    void deleteObject(String id) throws ObjectStorageException;
     
     /**
      * Reads an object's content and returns an InputStream to read the content.
@@ -203,7 +203,7 @@ public interface ObjectStore {
      * 
      * @throws ObjectStorageException if the request fails
      */
-    InputStream readObject(Identifier id);
+    InputStream readObject(String id);
     
     /**
      * List all the objects for a given metadata tag
@@ -213,7 +213,7 @@ public interface ObjectStore {
      * 		  this is used for paging through the result set
      * @return
      */
-    QueryResults<Identifier> listObjects(String tag, int limit, String continuationToken);
+    QueryResults<String> listObjects(String tag, int limit, String continuationToken);
     
     /**
      * List all the objects for a given metadata tag, include the metadata in the results.

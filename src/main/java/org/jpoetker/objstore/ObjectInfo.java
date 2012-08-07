@@ -7,7 +7,7 @@ public class ObjectInfo implements Serializable {
 
 	private static final long serialVersionUID = 1L;
 
-	private Identifier id;
+	private String id;
 	private Collection<Metadata> userMetadata;
 	private Collection<Metadata> systemMetadata;
 
@@ -15,7 +15,7 @@ public class ObjectInfo implements Serializable {
 		this(null, null, null);
 	}
 	
-	public ObjectInfo(Identifier id, Collection<Metadata> userMetadata,
+	public ObjectInfo(String id, Collection<Metadata> userMetadata,
 			Collection<Metadata> systemMetadata) {
 		super();
 		this.id = id;
@@ -23,11 +23,11 @@ public class ObjectInfo implements Serializable {
 		this.systemMetadata = systemMetadata;
 	}
 
-	public Identifier getId() {
+	public String getId() {
 		return id;
 	}
 
-	public void setId(Identifier id) {
+	public void setId(String id) {
 		this.id = id;
 	}
 

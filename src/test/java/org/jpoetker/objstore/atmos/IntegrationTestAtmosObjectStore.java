@@ -8,7 +8,7 @@ import java.io.UnsupportedEncodingException;
 import java.util.Collection;
 import java.util.ResourceBundle;
 
-import org.jpoetker.objstore.Identifier;
+
 import org.jpoetker.objstore.Metadata;
 import org.jpoetker.objstore.ObjectStore;
 import org.jpoetker.objstore.QueryResults;
@@ -61,7 +61,7 @@ public class IntegrationTestAtmosObjectStore {
 		
 		// First create an object in the cloud
 		InputStream in = createInputStream();		
-		Identifier id = storage.createObject(in, loremIpsum.getBytes("UTF-8").length, "text/plain", new Metadata("Test-Data", "Test", true));
+		String id = storage.createObject(in, loremIpsum.getBytes("UTF-8").length, "text/plain", new Metadata("Test-Data", "Test", true));
 		assertNotNull(id);
 		System.out.println("Object created with ID: " + id.toString());
 		in.close();
@@ -118,8 +118,8 @@ public class IntegrationTestAtmosObjectStore {
 		in.close();
 		in = null;
 		
-		QueryResults<Identifier> ids = storage.listObjects("Test-Data", 0, null);
-		for (Identifier i : ids.getResults()) {
+		QueryResults<String> ids = storage.listObjects("Test-Data", 0, null);
+		for (String i : ids.getResults()) {
 			System.out.println(i.toString());
 		}
 		

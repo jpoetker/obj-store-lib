@@ -36,13 +36,13 @@ public class AtmosResponse implements HttpResponse {
 		validate();
 	}
 
-	public AtmosObjectId getObjectId() {
+	public String getObjectId() {
 		String location = response.getFirstHeader("location").getValue();
 		Matcher m = OBJECTID_EXTRACTOR.matcher(location);
 
 		if (m.find()) {
 			String id = m.group(1);
-			return new AtmosObjectId(id);
+			return id;
 		} else {
 			throw new AtmosStorageException("Could not parse object id from " + location);
 		}

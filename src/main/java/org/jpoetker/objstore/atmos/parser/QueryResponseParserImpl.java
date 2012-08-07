@@ -9,11 +9,9 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
 import org.apache.http.HttpEntity;
-import org.jpoetker.objstore.Identifier;
 import org.jpoetker.objstore.Metadata;
 import org.jpoetker.objstore.ObjectInfo;
 import org.jpoetker.objstore.QueryResults;
-import org.jpoetker.objstore.atmos.AtmosObjectId;
 import org.jpoetker.objstore.atmos.AtmosResponse;
 import org.jpoetker.objstore.atmos.AtmosStorageException;
 import org.w3c.dom.Document;
@@ -30,8 +28,8 @@ public class QueryResponseParserImpl implements QueryResponseParser {
 	}
 
 	@Override
-	public QueryResults<Identifier> parseObjectIdentifiers(AtmosResponse response) {
-		Collection<Identifier> identifiers = new LinkedList<Identifier>();
+	public QueryResults<String> parseObjectIdentifiers(AtmosResponse response) {
+		Collection<String> identifiers = new LinkedList<String>();
 		HttpEntity body = response.getEntity();
 
 		if (body != null) {
@@ -47,7 +45,7 @@ public class QueryResponseParserImpl implements QueryResponseParser {
 					for (int j = 0; j < objectNodeChildren.getLength(); j++) {
 						Node objectNodeChild = objectNodeChildren.item(j);
 						if (isNamedElement(objectNodeChild, "ObjectID")) {
-							identifiers.add(new AtmosObjectId(objectNodeChild.getFirstChild().getNodeValue()));
+							identifiers.add(objectNodeChild.getFirstChild().getNodeValue());
 							break;
 						}
 					}
@@ -65,7 +63,7 @@ public class QueryResponseParserImpl implements QueryResponseParser {
 		}
 
 		identifiers = (identifiers.size() > 0) ? identifiers : null;
-		return new QueryResults<Identifier>(identifiers, response.getContinuationToken());
+		return new QueryResults<String>(identifiers, response.getContinuationToken());
 	}
 
 	@Override
@@ -90,7 +88,7 @@ public class QueryResponseParserImpl implements QueryResponseParser {
 					for (int j = 0; j < objectNodeChildren.getLength(); j++) {
 						Node objectNodeChild = objectNodeChildren.item(j);
 						if (isNamedElement(objectNodeChild, "ObjectID")) {
-							objectInfo.setId(new AtmosObjectId(objectNodeChild.getFirstChild().getNodeValue()));
+							objectInfo.setId(objectNodeChild.getFirstChild().getNodeValue());
 						} else if (isNamedElement(objectNodeChild, "SystemMetadataList")) {
 							objectInfo.setSystemMetadata(parseMetaData(objectNodeChild));
 						} else if (isNamedElement(objectNodeChild, "UserMetadataList")) {

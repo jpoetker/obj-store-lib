@@ -11,11 +11,9 @@ import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 
 import org.apache.http.HttpEntity;
-import org.jpoetker.objstore.Identifier;
 import org.jpoetker.objstore.Metadata;
 import org.jpoetker.objstore.ObjectInfo;
 import org.jpoetker.objstore.QueryResults;
-import org.jpoetker.objstore.atmos.AtmosObjectId;
 import org.jpoetker.objstore.atmos.AtmosResponse;
 import org.jpoetker.objstore.atmos.AtmosStorageException;
 
@@ -38,8 +36,8 @@ public class QueryResponseParserStreamImpl implements QueryResponseParser {
 	}
 	
 	@Override
-	public QueryResults<Identifier> parseObjectIdentifiers(AtmosResponse response) {
-		Collection<Identifier> identifiers = new LinkedList<Identifier>();
+	public QueryResults<String> parseObjectIdentifiers(AtmosResponse response) {
+		Collection<String> identifiers = new LinkedList<String>();
 		HttpEntity body = response.getEntity();
 
 		if (body != null) {
@@ -48,10 +46,10 @@ public class QueryResponseParserStreamImpl implements QueryResponseParser {
 				// The filter will only return the text nodes of the ObjectId elements :)
 				XMLStreamReader xmlReader = xmlInputFactory.createFilteredReader(
 						xmlInputFactory.createXMLStreamReader(body.getContent()),
-						new IdentifierFilter());
+						new StringFilter());
 				
 				while(xmlReader.hasNext() && (xmlReader.getEventType() != XMLStreamReader.END_DOCUMENT)) {
-					identifiers.add(new AtmosObjectId(xmlReader.getText()));
+					identifiers.add(xmlReader.getText().trim());
 					xmlReader.next();
 				}
 				
@@ -64,7 +62,7 @@ public class QueryResponseParserStreamImpl implements QueryResponseParser {
 			} 
 		}
 		identifiers = (identifiers.size() > 0) ? identifiers : null;
-		return new QueryResults<Identifier>(identifiers, response.getContinuationToken());
+		return new QueryResults<String>(identifiers, response.getContinuationToken());
 	}
 
 	@Override
@@ -107,7 +105,7 @@ public class QueryResponseParserStreamImpl implements QueryResponseParser {
 						
 					} else if (xmlReader.getEventType() == XMLStreamReader.CHARACTERS) {
 						if (OBJECT_ID_TAG_NAME.equals(objectInfoFilter.currentValueTag)) {
-							currentObj.setId(new AtmosObjectId(xmlReader.getText()));
+							currentObj.setId(xmlReader.getText().trim());
 						} else if (NAME_TAG_NAME.equals(objectInfoFilter.currentValueTag)) {
 							name = xmlReader.getText();
 						} else if (VALUE_TAG_NAME.equals(objectInfoFilter.currentValueTag)) {
@@ -132,7 +130,7 @@ public class QueryResponseParserStreamImpl implements QueryResponseParser {
 		return new QueryResults<ObjectInfo>(objectInfos, response.getContinuationToken());
 	}
 
-	private static class IdentifierFilter implements StreamFilter {
+	private static class StringFilter implements StreamFilter {
 		boolean acceptNextTextElement = false;
 		
 		@Override

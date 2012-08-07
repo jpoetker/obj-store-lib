@@ -11,7 +11,6 @@ import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.StatusLine;
 import org.apache.http.message.BasicHeader;
-import org.jpoetker.objstore.Identifier;
 import org.jpoetker.objstore.Metadata;
 import org.jpoetker.objstore.ObjectInfo;
 import org.jpoetker.objstore.QueryResults;
@@ -189,14 +188,14 @@ public class TestQueryResponseProcessor {
 	}
 
 	@Test
-	public void testParseObjectIdentifiers() throws Exception {
+	public void testParseObjectStrings() throws Exception {
 		HttpEntity mockEntity = mock(HttpEntity.class);
 		when(mockEntity.getContent()).thenReturn(new ByteArrayInputStream(objectResponseXML.getBytes("UTF-8")));
 		
 		when(mockHttpResponse.getEntity()).thenReturn(mockEntity);
 		when(mockHttpResponse.getFirstHeader("x-emc-token")).thenReturn(new BasicHeader("x-emc-token", "tokenvalue"));
 		
-		QueryResults<Identifier> ids = processor.parseObjectIdentifiers(new AtmosResponse(mockHttpResponse));
+		QueryResults<String> ids = processor.parseObjectIdentifiers(new AtmosResponse(mockHttpResponse));
 		
 		verify(mockEntity).getContent();
 		verify(mockHttpResponse).getFirstHeader("x-emc-token");

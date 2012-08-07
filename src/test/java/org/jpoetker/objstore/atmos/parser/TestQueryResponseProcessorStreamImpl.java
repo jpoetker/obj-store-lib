@@ -10,7 +10,7 @@ import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.StatusLine;
 import org.apache.http.message.BasicHeader;
-import org.jpoetker.objstore.Identifier;
+
 import org.jpoetker.objstore.ObjectInfo;
 import org.jpoetker.objstore.QueryResults;
 import org.jpoetker.objstore.atmos.AtmosResponse;
@@ -195,7 +195,7 @@ public class TestQueryResponseProcessorStreamImpl {
 		when(mockHttpResponse.getEntity()).thenReturn(mockEntity);
 		when(mockHttpResponse.getFirstHeader("x-emc-token")).thenReturn(new BasicHeader("x-emc-token", "tokenvalue"));
 
-		QueryResults<Identifier> ids = processor.parseObjectIdentifiers(new AtmosResponse(mockHttpResponse));
+		QueryResults<String> ids = processor.parseObjectIdentifiers(new AtmosResponse(mockHttpResponse));
 
 		verify(mockEntity).getContent();
 		verify(mockHttpResponse).getFirstHeader("x-emc-token");
